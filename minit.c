@@ -168,32 +168,20 @@ int isup(int service) {
 
 int startservice(int service,int pause,int father);
 
-#undef debug
 void handlekilled(pid_t killed) {
   int i;
-#ifdef debug
-  {
-    char buf[50];
-    snprintf(buf,50," %d\n",killed);
-    write(2,buf,str_len(buf));
-  }
-#endif
   if (killed == (pid_t)-1) {
     static int saidso;
-    if (!saidso) { write(2,"all services exited.\n",21); saidso=1; }
+    if (!saidso) { puts("all services exited."); saidso=1; }
     if (i_am_init) exit(0);
   }
   if (killed==0) return;
   i=findbypid(killed);
-#if 0
-  printf("%d exited, idx %d -> service %s\n",killed,i,i>=0?root[i].name:"[unknown]");
-#endif
+  msg((i >= 0) ? root[i].name : "[unknown]", " exited");
   if (i>=0) {
     root[i].pid=0;
     if (root[i].respawn) {
-#if 0
-      printf("restarting %s\n",root[i].name);
-#endif
+      msg("restarting ", root[i].name);
       circsweep();
       startservice(i,time(0)-root[i].startedat<1,root[i].father);
     } else {
@@ -358,16 +346,7 @@ int startservice(int service,int pause,int father) {
     }
     pid=startnodep(service,pause);
 
-#if 0
-    write(1,"started service ",17);
-    write(1,root[service].name,str_len(root[service].name));
-    write(1," -> ",4);
-    {
-      char buf[10];
-      snprintf(buf,10,"%d\n",pid);
-      write(1,buf,str_len(buf));
-    }
-#endif
+    msg("service ", root[service].name, " started");
     close(dir);
     dir=-1;
   }
@@ -381,10 +360,6 @@ void sulogin() {	/* exiting on an initialization failure is not a good idea for 
   _exit(1);
 }
 
-
-static void _puts(const char* s) {
-  write(1,s,str_len(s));
-}
 
 void childhandler() {
   int status;
@@ -460,7 +435,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (infd<0 || outfd<0) {
-    _puts("minit: could not open " MINITROOT "/in or " MINITROOT "/out\n");
+    puts("minit: could not open " MINITROOT "/in or " MINITROOT "/out");
     sulogin();
     nfds=0;
   } else
@@ -522,7 +497,7 @@ int main(int argc, char *argv[]) {
 	break;
       }
       opendevconsole();
-      _puts("poll failed!\n");
+      puts("poll failed!\n");
       sulogin();
       /* what should we do if poll fails?! */
       break;
@@ -533,7 +508,6 @@ int main(int argc, char *argv[]) {
 	int idx,tmp;
 	buf[i]=0;
 
-/*	write(1,buf,str_len(buf)); write(1,"\n",1); */
 #ifdef UPDATE
 	if(!strcmp(buf,"update")) {
 	  execve("/sbin/minit",argv, environ);
