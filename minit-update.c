@@ -7,10 +7,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include "str.h"
-#include "buffer.h"
 
 #include "minit.h"
+#include "platform.h"
 
 #define USAGE "Usage: minit-update [ -v [ -u ] ]\n"
 #define BUFLEN 1500
@@ -34,12 +33,6 @@ ssize_t read_outfd(void *buf, size_t count);
 void addprocess(struct process *p);
 
 
-void die(const char *msg) {
- buffer_putsflush(buffer_2, msg);
- _exit(111);
-}
-
-
 void buffer_putsnlflush(buffer *b, const char *msg) {
  buffer_puts(b, msg);
  buffer_putflush(b, "\n",1);
@@ -59,7 +52,7 @@ void buffer_puts_strerror(const char *msg) {
 
 void *xmalloc(size_t size) {
  void *ptr=malloc(size);
- if (!ptr) die("malloc() failed\n");
+ if (!ptr) die(111, "malloc() failed\n");
  return ptr;
 }
 
@@ -173,7 +166,7 @@ buffer_flush(buffer_1);
 int main(int argc, char **argv) {
  int i;
 
- if (argc < 2) die(USAGE);
+ if (argc < 2) die(111, USAGE);
 
  while (argc>1) {
    argc--;
@@ -185,13 +178,13 @@ int main(int argc, char **argv) {
         buffer_puts(buffer_2,"minit-update: Unknown Option: ");          
 	buffer_putsnlflush(buffer_2,argv[argc]);
      } 
-   } else die(USAGE);
+   } else die(111, USAGE);
  }
 
  infd=open(MINITROOT "/in",O_WRONLY);
  outfd=open(MINITROOT "/out",O_RDONLY);
  
- if (infd<0 || outfd<0) die("could not open " MINITROOT "/in or " MINITROOT "/out\n");
+ if (infd<0 || outfd<0) die(111, "could not open " MINITROOT "/in or " MINITROOT "/out\n");
 
  while (lockf(infd,F_TLOCK,1)) {
     buffer_puts_strerror("could not acquire lock: ");
@@ -201,7 +194,7 @@ int main(int argc, char **argv) {
  find_service(0,MINITROOT,0);
 
  if (maxprocess == -1) 
-    die("Could not extract running services from minit\n");
+    die(111, "Could not extract running services from minit\n");
  
  if (verbose) buffer_putsflush(buffer_1, "minit-update: telling minit to execve itself\n");
  
@@ -249,7 +242,7 @@ void addprocess(struct process *p) {
   if (maxprocess+1>=processalloc) {
     struct process *fump;
     processalloc+=8;
-    if ((fump=(struct process *)realloc(root,processalloc*sizeof(struct process)))==0) die("realloc() failed\n ");
+    if ((fump=(struct process *)realloc(root,processalloc*sizeof(struct process)))==0) die(111, "realloc() failed\n ");
     root=fump;
   }
   memmove(&root[++maxprocess],p,sizeof(struct process));

@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 
-#include "str.h"
+#include "platform.h"
 
 #ifdef __dietlibc__
 #include <write12.h>

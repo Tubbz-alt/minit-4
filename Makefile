@@ -32,6 +32,8 @@ DIET+=-Os
 endif
 endif
 
+ifneq ($(DIET),)
+
 LDLIBS=-lowfat
 
 libowfat_path = $(strip $(foreach dir,../libowfat*,$(wildcard $(dir)/textcode.h)))
@@ -40,12 +42,14 @@ CFLAGS+=$(foreach fnord,$(libowfat_path),-I$(dir $(fnord)))
 LDFLAGS+=$(foreach fnord,$(libowfat_path),-L$(dir $(fnord)))
 endif
 
-minit: minit.o split.o openreadclose.o opendevconsole.o
-msvc: msvc.o
-minit-update: minit-update.o split.o openreadclose.o
-serdo: serdo.o
+endif
 
-shutdown: shutdown.o split.o openreadclose.o opendevconsole.o
+minit: minit.o split.o openreadclose.o opendevconsole.o platform.o
+msvc: msvc.o platform.o
+minit-update: minit-update.o split.o openreadclose.o platform.o
+serdo: serdo.o platform.o
+
+shutdown: shutdown.o split.o openreadclose.o opendevconsole.o platform.o
 	$(DIET) $(CROSS)$(CC) $(LDFLAGS) -o shutdown $^
 
 %.o: %.c

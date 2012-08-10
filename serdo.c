@@ -2,12 +2,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <ctype.h>
-#include <errmsg.h>
 #include <sys/wait.h>
-#include <str.h>
-#include <byte.h>
-#include <scan.h>
 #include <sys/resource.h>
+#include "platform.h"
 
 #define MAXENV 256
 char* envp[MAXENV+2];
@@ -92,7 +89,7 @@ ulimitsyntax:
   } else i=0;
   if (!i) {
     /* child */
-    environ=envp;
+    environ = envp;
     _exit(execvp(argv[0],argv));
   }
   if (waitpid(i,&i,0)==-1) diesys(1,"waitpid failed");

@@ -5,12 +5,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "str.h"
-#include "fmt.h"
-#include "buffer.h"
 #define NOVARS
 #include "minit.h"
-#include <errmsg.h>
+#include "platform.h"
 #include <errno.h>
 
 static int infd,outfd;

@@ -16,10 +16,9 @@
 #include <stdlib.h>
 #include <alloca.h>
 #include <sys/reboot.h>
-#include "fmt.h"
-#include "str.h"
 
 #include "minit.h"
+#include "platform.h"
 
 #define MALLOC_TEST
 #if !defined(__dietlibc__) && !defined(__GLIBC__)
