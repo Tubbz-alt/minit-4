@@ -1,0 +1,11 @@
+*.o
+shutdown
+minit-update
+serdo
+minit
+msvc
+pidfilehack
+hard-reboot
+write_proc
+killall5
+libplatform.a
