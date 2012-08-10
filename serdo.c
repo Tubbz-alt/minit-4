@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <sys/wait.h>
 #include <sys/resource.h>
-#include "platform.h"
+#include "platform/platform.h"
 
 #define MAXENV 256
 char* envp[MAXENV+2];

@@ -18,7 +18,7 @@
 #include <sys/reboot.h>
 
 #include "minit.h"
-#include "platform.h"
+#include "platform/platform.h"
 
 #define MALLOC_TEST
 #if !defined(__dietlibc__) && !defined(__GLIBC__)
@@ -581,7 +581,7 @@ error:
 	    goto ok;
 	  case 'P':
 	    {
-	      unsigned char *x=buf+str_len(buf)+1;
+	      unsigned char *x=(unsigned char *) buf+str_len(buf)+1;
 	      unsigned char c;
 	      tmp=0;
 	      while ((c=*x++-'0')<10) tmp=tmp*10+c;

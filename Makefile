@@ -25,7 +25,7 @@ ifneq ($(DEBUG),)
 CFLAGS+=-g
 LDFLAGS+=-g
 else
-CFLAGS+=-O2 -fomit-frame-pointer
+CFLAGS+=-O2 -fomit-frame-pointer -Wno-unused-result
 LDFLAGS+=-s
 ifneq ($(DIET),)
 DIET+=-Os
@@ -42,25 +42,38 @@ CFLAGS+=$(foreach fnord,$(libowfat_path),-I$(dir $(fnord)))
 LDFLAGS+=$(foreach fnord,$(libowfat_path),-L$(dir $(fnord)))
 endif
 
+else
+
+PLATFORM_OBJS = platform/byte_equal.o platform/errmsg.o platform/fmt_str.o \
+		platform/fmt_ulong.o platform/scan_ulong.o platform/str_chr.o
+
+libplatform.a: $(PLATFORM_OBJS)
+
+PLATFORM_LIBS=libplatform.a
+
 endif
 
-minit: minit.o split.o openreadclose.o opendevconsole.o platform.o
-msvc: msvc.o platform.o
-minit-update: minit-update.o split.o openreadclose.o platform.o
-serdo: serdo.o platform.o
+minit: minit.o split.o openreadclose.o opendevconsole.o $(PLATFORM_LIBS)
+msvc: msvc.o $(PLATFORM_LIBS)
+minit-update: minit-update.o split.o openreadclose.o $(PLATFORM_LIBS)
+serdo: serdo.o $(PLATFORM_LIBS)
 
-shutdown: shutdown.o split.o openreadclose.o opendevconsole.o platform.o
+shutdown: shutdown.o split.o openreadclose.o opendevconsole.o $(PLATFORM_LIBS)
 	$(DIET) $(CROSS)$(CC) $(LDFLAGS) -o shutdown $^
 
 %.o: %.c
-	$(DIET) $(CROSS)$(CC) $(CFLAGS) -c $<
+	$(DIET) $(CROSS)$(CC) $(CFLAGS) -c $< -o $@
 
 %: %.o
 	$(DIET) $(CROSS)$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
+%.a:
+	$(CROSS)ar cr $@ $^
+	-$(CROSS)ranlib $@
+
 clean:
 	rm -f *.o minit msvc pidfilehack hard-reboot write_proc killall5 \
-	shutdown minit-update serdo
+	shutdown minit-update serdo libplatform.a platform/*.o
 
 test: test.c
 	gcc -nostdlib -o $@ $^ -I../dietlibc/include ../dietlibc/start.o ../dietlibc/dietlibc.a

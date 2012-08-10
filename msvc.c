@@ -7,7 +7,7 @@
 #include <unistd.h>
 #define NOVARS
 #include "minit.h"
-#include "platform.h"
+#include "platform/platform.h"
 #include <errno.h>
 
 static int infd,outfd;

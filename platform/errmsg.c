@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 2012 Sylvain Fargier <sylvain.fargier@somfy.com>
+** Copyright (C) 2012 Fargier Sylvain <fargier.sylvain@free.fr>
 **
 ** This software is provided 'as-is', without any express or implied
 ** warranty.  In no event will the authors be held liable for any damages
@@ -17,68 +17,17 @@
 **    misrepresented as being the original software.
 ** 3. This notice may not be removed or altered from any source distribution.
 **
-** platform.c
+** errmsg_iam.c
 **
-**        Created on: Aug 08, 2012
-**   Original Author: Sylvain Fargier <sylvain.fargier@somfy.com>
+**        Created on: Aug 10, 2012
+**   Original Author: Fargier Sylvain <fargier.sylvain@free.fr>
 **
 */
-
-#if !defined(__dietlibc__)
 
 #include <stdarg.h>
 #include <errno.h>
 
 #include "platform.h"
-
-size_t str_chr(const char *haystack, char needle)
-{
-    register size_t i;
-
-    for (i = 0; haystack[i] != '\0'; ++i)
-        if (haystack[i] == needle)
-            break;
-    return i;
-}
-
-size_t fmt_ulong(char *dest, unsigned long src)
-{
-    char buff[FMT_ULONG];
-    size_t pos = FMT_ULONG, ret;
-
-    do {
-        buff[--pos] = '0' + (src % 10);
-    } while ((src /= 10) != 0);
-
-    ret = FMT_ULONG - pos;
-    if (dest)
-        memcpy(dest, &buff[pos], ret);
-    return ret;
-}
-
-size_t fmt_str(char *dest, const char *src)
-{
-    size_t ret = str_len(src);
-
-    if (dest)
-        memcpy(dest, src, ret);
-    return ret;
-}
-
-/* different behavior form libowfat's, on overflow continue to process input */
-size_t scan_ulong(const char *src, unsigned long int *dest) {
-    register const char *tmp = src;
-    register unsigned long int l = 0;
-    register unsigned char c;
-
-    while ((c = *(tmp) - '0') < 10) {
-        l = (l << 3) + (l << 1) + c;
-        ++tmp;
-    }
-    if (dest)
-        *dest = l;
-    return tmp - src;
-}
 
 static const char *argv0 = 0;
 
@@ -113,14 +62,4 @@ void errmsg_write(FILE *f, char perr, ...)
 
     fputs("\n", f);
 }
-
-int byte_equal(const char *a, size_t n, const char *b)
-{
-    while (n--)
-        if (*(a++) != *(b++))
-            return 0;
-    return 1;
-}
-
-#endif
 

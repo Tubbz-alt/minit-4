@@ -9,7 +9,7 @@
 #include <string.h>
 
 #include "minit.h"
-#include "platform.h"
+#include "platform/platform.h"
 
 #define USAGE "Usage: minit-update [ -v [ -u ] ]\n"
 #define BUFLEN 1500
