@@ -10,6 +10,8 @@ LDFLAGS=-s
 MANDIR=/usr/man
 
 path = $(subst :, ,$(PATH))
+include = /usr/include
+
 diet_path = $(foreach dir,$(path),$(wildcard $(dir)/diet))
 ifeq ($(strip $(diet_path)),)
 ifneq ($(wildcard /opt/diet/bin/diet),)
@@ -34,23 +36,22 @@ endif
 
 ifneq ($(DIET),)
 
-LDLIBS=-lowfat
-
-libowfat_path = $(strip $(foreach dir,../libowfat*,$(wildcard $(dir)/textcode.h)))
+libowfat_path = $(strip $(foreach dir,$(include),$(wildcard $(dir)/libowfat/textcode.h)))
 ifneq ($(libowfat_path),)
-CFLAGS+=$(foreach fnord,$(libowfat_path),-I$(dir $(fnord)))
+CFLAGS+=$(foreach fnord,$(libowfat_path),-I$(dir $(fnord))) -DHAVE_LIBOWFAT
 LDFLAGS+=$(foreach fnord,$(libowfat_path),-L$(dir $(fnord)))
+LDLIBS=-lowfat
 endif
 
-else
+endif
 
+ifeq ($(libowfat_path),)
 PLATFORM_OBJS = platform/byte_equal.o platform/errmsg.o platform/fmt_str.o \
 		platform/fmt_ulong.o platform/scan_ulong.o platform/str_chr.o
 
 libplatform.a: $(PLATFORM_OBJS)
 
 PLATFORM_LIBS=libplatform.a
-
 endif
 
 minit: minit.o split.o openreadclose.o opendevconsole.o $(PLATFORM_LIBS)

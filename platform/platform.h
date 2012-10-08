@@ -27,7 +27,7 @@
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
 
-#if defined(__dietlibc__)
+#if defined(HAVE_LIBOWFAT)
 
 #include <libowfat/fmt.h>
 #include <libowfat/str.h>
