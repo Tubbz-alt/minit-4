@@ -505,7 +505,7 @@ int main(int argc, char *argv[]) {
       i=read(infd,buf,1500);
       if (i>1) {
 	pid_t pid;
-	int idx,tmp;
+	int idx = 0,tmp;
 	buf[i]=0;
 
 #ifdef UPDATE
