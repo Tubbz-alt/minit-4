@@ -72,6 +72,7 @@ static int doupdate;
 #endif
 
 static int i_am_init;
+static const char *minit_root;
 
 extern int openreadclose(char *fn, char **buf, unsigned long *len);
 extern char **split(char *buf,int c,int *len,int plus,int ofs);
@@ -130,7 +131,7 @@ int loadservice(char *service) {
   if (*service==0) return -1;
   fd=findservice(service);
   if (fd>=0) return fd;
-  if (chdir(MINITROOT) || chdir(service)) return -1;
+  if (chdir(minit_root) || chdir(service)) return -1;
   if (!(tmp.name=strdup(service))) return -1;
   tmp.pid=0;
   fd=open("respawn",O_RDONLY);
@@ -291,7 +292,7 @@ int startnodep(int service,int pause) {
   /* step 1: see if the process is already up */
   if (isup(service)) return 0;
   /* step 2: fork and exec service, put PID in data structure */
-  if (chdir(MINITROOT) || chdir(root[service].name)) return -1;
+  if (chdir(minit_root) || chdir(root[service].name)) return -1;
   root[service].startedat=time(0);
   root[service].pid=forkandexec(pause,service);
   return root[service].pid;
@@ -319,7 +320,7 @@ int startservice(int service,int pause,int father) {
 #endif
   if (root[service].logservice>=0)
     startservice(root[service].logservice,pause,service);
-  if (chdir(MINITROOT) || chdir(root[service].name)) return -1;
+  if (chdir(minit_root) || chdir(root[service].name)) return -1;
   if ((dir=open(".",O_RDONLY))>=0) {
     if (!openreadclose("depends",&s,&len)) {
       char **deps;
@@ -350,7 +351,7 @@ int startservice(int service,int pause,int father) {
     close(dir);
     dir=-1;
   }
-  chdir(MINITROOT);
+  chdir(minit_root);
   return pid;
 }
 
@@ -407,10 +408,14 @@ int main(int argc, char *argv[]) {
     history[i]=-1;
 #endif
 
+  minit_root = getenv(MINITROOT_ENVVAR);
+  if (minit_root == NULL)
+      minit_root = DEFAULT_MINITROOT;
   Argv=argv;
 
-  infd=open(MINITROOT "/in",O_RDWR);
-  outfd=open(MINITROOT "/out",O_RDWR|O_NONBLOCK);
+  chdir(minit_root);
+  infd=open("in",O_RDWR);
+  outfd=open("out",O_RDWR|O_NONBLOCK);
 
   if (getpid()==1) {
     int fd;
@@ -435,7 +440,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (infd<0 || outfd<0) {
-    puts("minit: could not open " MINITROOT "/in or " MINITROOT "/out");
+    puts("minit: could not open in/out fifos");
     sulogin();
     nfds=0;
   } else

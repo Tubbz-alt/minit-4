@@ -22,6 +22,7 @@ static char buf[BUFLEN+1];
 
 static unsigned int verbose;
 static int do_update;
+static const char *minit_root;
 
 int openreadclose(char *fn, char **buf, unsigned long *len);
 char **split(char *buf,int c,int *len,int plus,int ofs);
@@ -157,7 +158,7 @@ closedir(dirstream);
 
 ret:
 if (service) free(service);
-chdir(MINITROOT);
+chdir(minit_root);
 if (parent) chdir(parent);
 buffer_flush(buffer_1);
 } 
@@ -181,17 +182,23 @@ int main(int argc, char **argv) {
    } else die(111, USAGE);
  }
 
- infd=open(MINITROOT "/in",O_WRONLY);
- outfd=open(MINITROOT "/out",O_RDONLY);
- 
- if (infd<0 || outfd<0) die(111, "could not open " MINITROOT "/in or " MINITROOT "/out\n");
+ minit_root = getenv(MINITROOT_ENVVAR);
+ if (minit_root == NULL)
+     minit_root = DEFAULT_MINITROOT;
+
+ chdir(minit_root);
+
+ infd=open("in",O_WRONLY);
+ outfd=open("out",O_RDONLY);
+
+ if (infd<0 || outfd<0) die(111, "could not open in/out fifos\n");
 
  while (lockf(infd,F_TLOCK,1)) {
     buffer_puts_strerror("could not acquire lock: ");
     sleep(1);
  }
 
- find_service(0,MINITROOT,0);
+ find_service(0, minit_root, 0);
 
  if (maxprocess == -1) 
     die(111, "Could not extract running services from minit\n");

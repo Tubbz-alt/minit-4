@@ -82,6 +82,7 @@ int exec_cmd(char *cmd, ...) {
 
 static int infd, outfd;
 static char buf[1500];
+static const char *minit_root;
 
 int minit_serviceDown(char *service) {
   char *s=0;
@@ -89,7 +90,7 @@ int minit_serviceDown(char *service) {
   pid_t pid=0;
   
   if (!service || !*service) return 0;
-  if (chdir(MINITROOT) || chdir(service)) return -1;
+  if (chdir(minit_root) || chdir(service)) return -1;
   
   if (!openreadclose("depends", &s, &len)) {
     char **deps;
@@ -130,13 +131,14 @@ int minit_shutdown(int level) {
   int retval;
 
   __write2("Shutting down minit services: \n");
-  infd=open(MINITROOT "/in", O_WRONLY);
-  outfd=open(MINITROOT "/out", O_RDONLY);
+  chdir(minit_root);
+  infd=open("in", O_WRONLY);
+  outfd=open("out", O_RDONLY);
   if (infd>=0) {
     while (lockf(infd, F_TLOCK, 1)) {
       __write2("could not acquire lock!\n");
       sleep(1);
-    }  
+    }
   }
 
   retval=minit_serviceDown(level?"halt":"reboot");
@@ -235,6 +237,10 @@ int main(int argc, char *const argv[]) {
  
   // real shutdown? then lets rock..
   #ifdef USE_MINIT
+  minit_root = getenv(MINITROOT_ENVVAR);
+  if (minit_root == NULL)
+      minit_root = DEFAULT_MINITROOT;
+
   minit_shutdown(cfg_downlevel);
   if (cfg_minitonly) return 0;
   #endif

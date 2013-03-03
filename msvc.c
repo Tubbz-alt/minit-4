@@ -11,17 +11,21 @@
 #include <errno.h>
 
 static int infd,outfd;
+static const char *minit_root;
 
 static char buf[1500];
 
 void addservice(char* service) {
   char* x;
-  if (str_start(service,MINITROOT "/"))
-    service+=sizeof(MINITROOT "/") -1;
-  x=service+str_len(service)-1;
-  while (x>service && *x=='/') { *x=0; --x; }
-  strncpy(buf+1,service,1400);
-  buf[1400]=0;
+  if (str_start(service, minit_root))
+    service += str_len(minit_root);
+  while (*service == '/')
+      ++service;
+  x = service + str_len(service) - 1;
+  while (x > service && *x == '/')
+  { *x = 0; --x; }
+  strncpy(buf + 1, service, 1400);
+  buf[1400] = 0;
 }
 
 int addreadwrite(char* service) {
@@ -184,8 +188,15 @@ int main(int argc,char *argv[]) {
     return 0;
   }
   errmsg_iam("msvc");
-  infd=open(MINITROOT "/in",O_WRONLY);
-  outfd=open(MINITROOT "/out",O_RDONLY);
+
+  minit_root = getenv(MINITROOT_ENVVAR);
+  if (minit_root == NULL)
+      minit_root = DEFAULT_MINITROOT;
+
+  chdir(minit_root);
+
+  infd=open("in",O_WRONLY);
+  outfd=open("out",O_RDONLY);
   if (infd>=0) {
     while (lockf(infd,F_LOCK,1)) {
       carp("could not acquire lock!");
@@ -330,7 +341,7 @@ dokill:
       return ret;
     }
   } else {
-    carp("minit: could not open " MINITROOT "/in or " MINITROOT "/out");
+    carp("minit: could not open in/out fifos");
     return 1;
   }
 }
