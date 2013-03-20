@@ -553,10 +553,7 @@ error:
 	    root[idx].respawn=1;
 	    goto ok;
 	  case 'C':
-	    if (kill(root[idx].pid,0)) {	/* check if still active */
-	      handlekilled(root[idx].pid);	/* no!?! remove form active list */
-	      goto error;
-	    }
+	     handlekilled(root[idx].pid);	/* no!?! remove form active list */
 	    goto ok;
 	  case 'P':
 	    {
